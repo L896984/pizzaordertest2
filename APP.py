@@ -6,7 +6,7 @@ app = Flask(__name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '你的密碼',
+    'password': '我的密碼',
     'database': 'pizza_order'
 }
 
@@ -36,3 +36,15 @@ def order():
 if __name__ == '__main__':
     app.run(debug=True)
 
+import os
+port = int(os.environ.get("PORT", 5000))
+app.run(host="0.0.0.0", port=port)
+
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host=os.environ['DB_HOST'],
+        user=os.environ['DB_USER'],
+        password=os.environ['DB_PASSWORD'],
+        database=os.environ['DB_NAME']
+    )
