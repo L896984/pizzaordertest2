@@ -1,6 +1,5 @@
 from flask import Flask, request, redirect
 import mysql.connector
-
 app = Flask(__name__)
 
 db_config = {
@@ -32,15 +31,10 @@ def order():
     conn.close()
 
     return redirect('/')
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-import os
-port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=port)
-
-
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
 def get_db_connection():
     return mysql.connector.connect(
         host=os.environ['DB_HOST'],
