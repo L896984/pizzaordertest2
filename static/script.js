@@ -1,27 +1,28 @@
-document.getElementById("pizzaForm").addEventListener("submit", function(e) {
-  e.preventDefault();
 
-  const type = document.getElementById("pizzaType").value;
-  const size = document.getElementById("pizzaSize").value;
-  const toppings = Array.from(document.querySelectorAll("input[type='checkbox']:checked"))
-    .map(el => el.value);
+ document.getElementById("pizzaForm").addEventListener("change", calculateTotal);
+ document.getElementById("pizzaForm").addEventListener("submit", function(e) {
+   calculateTotal();
+ });
 
-  let basePrice = { margherita: 200, pepperoni: 250, hawaiian: 230 }[type];
-  let sizeAdd = { small: 0, medium: 50, large: 100 }[size];
-  let toppingAdd = toppings.length * 30;
+ function calculateTotal() {
+   const pizzaPrices = {
+     margherita: 200,
+     pepperoni: 250,
+     hawaiian: 230
+   };
 
-  const total = basePrice + sizeAdd + toppingAdd;
+   const sizePrices = {
+     small: 0,
+     medium: 50,
+     large: 100
+   };
 
-  fetch("/api/order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      pizzaType: type,
-      pizzaSize: size,
-      toppings: toppings,
-      total: total
-    })
-  })
-  .then(res => res.json())
-  .then(data => alert(data.message));
-});
+   const pizzaType = document.getElementById("pizzaType").value;
+   const pizzaSize = document.getElementById("pizzaSize").value;
+   const toppings = document.querySelectorAll('input[name="topping"]:checked');
+
+   let total = pizzaPrices[pizzaType] + sizePrices[pizzaSize];
+   total += toppings.length * 30;
+
+   document.getElementById("total").textContent = "總金額：$" + total;
+ }
