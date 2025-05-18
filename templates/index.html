@@ -1,0 +1,43 @@
+PizzaOrder/
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Pizza 點餐系統</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Pizza 點餐系統</h1>
+    
+    <form id="pizzaForm">
+      <label for="pizzaType">選擇Pizza口味：</label>
+      <select id="pizzaType" name="pizzaType">
+        <option value="margherita">瑪格麗特 ($200)</option>
+        <option value="pepperoni">義式臘腸 ($250)</option>
+        <option value="hawaiian">夏威夷 ($230)</option>
+      </select>
+
+      <label for="pizzaSize">選擇大小：</label>
+      <select id="pizzaSize" name="pizzaSize">
+        <option value="small">小 (+$0)</option>
+        <option value="medium">中 (+$50)</option>
+        <option value="large">大 (+$100)</option>
+      </select>
+
+      <fieldset>
+        <legend>加料（每項 +$30）：</legend>
+        <label><input type="checkbox" name="topping" value="cheese">起司</label>
+        <label><input type="checkbox" name="topping" value="mushroom">蘑菇</label>
+        <label><input type="checkbox" name="topping" value="bacon">培根</label>
+      </fieldset>
+
+      <p id="total">總金額：$0</p>
+      <button type="submit">提交訂單</button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
