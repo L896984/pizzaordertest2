@@ -1,7 +1,11 @@
 from flask import Flask, request, redirect
 import mysql.connector
 import os
+from flask import render_template
 
+@app.route('/')
+def index():
+    return render_template('index.html') 
 app = Flask(__name__)
 
 # 建議用環境變數設定資料庫資訊
@@ -42,3 +46,4 @@ def order():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+    
