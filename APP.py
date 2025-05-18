@@ -1,14 +1,9 @@
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, render_template
 import mysql.connector
 import os
-from flask import render_template
 
-@app.route('/')
-def index():
-    return render_template('index.html') 
 app = Flask(__name__)
 
-# 建議用環境變數設定資料庫資訊
 def get_db_connection():
     return mysql.connector.connect(
         host=os.environ.get('DB_HOST', 'localhost'),
@@ -17,12 +12,14 @@ def get_db_connection():
         database=os.environ.get('DB_NAME', 'pizza_order')
     )
 
-# 價格設定
 pizza_prices = {'margherita': 200, 'pepperoni': 250, 'hawaiian': 230}
 size_prices = {'small': 0, 'medium': 50, 'large': 100}
 topping_price = 30
 
-# 接收前端的 POST 請求
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/order', methods=['POST'])
 def order():
     pizza_type = request.form.get('pizzaType')
@@ -42,8 +39,6 @@ def order():
 
     return redirect('/')
 
-# 開啟 Flask Server，支援部署環境
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-    
