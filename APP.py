@@ -8,7 +8,7 @@ def get_db_connection():
     return mysql.connector.connect(
         host=os.environ.get('DB_HOST', 'localhost'),
         user=os.environ.get('DB_USER', 'root'),
-        password=os.environ.get('DB_PASSWORD', ''),
+        password=os.environ.get('DB_PASSWORD', '你的密碼'),
         database=os.environ.get('DB_NAME', 'pizza_order')
     )
 
@@ -41,4 +41,4 @@ def order():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port,debug=True)
