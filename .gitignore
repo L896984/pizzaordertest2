@@ -1,0 +1,13 @@
+# 主要忽略敏感和不必要的檔案
+.env
+__pycache__/
+*.pyc
+*.log
+
+# VSCode 和其他 IDE 設定
+.vscode/
+.idea/
+
+# 系統檔案
+.DS_Store
+Thumbs.db
