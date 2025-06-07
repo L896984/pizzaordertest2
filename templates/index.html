@@ -1,42 +1,118 @@
-# <!DOCTYPE html>
-# <html lang="zh-Hant">
-# <head>
-#   <meta charset="UTF-8">
-#   <title>Pizza 點餐系統</title>
-#   <link rel="stylesheet" href="/static/style.css">
-# </head>
-# <body>
-#   <div class="container">
-#     <h1>Pizza 點餐系統</h1>
-    
-#     <form id="pizzaForm" action="/order" method="POST">
-#       <label for="pizzaType">選擇Pizza口味：</label>
-#       <select id="pizzaType" name="pizzaType">
-#         <option value="margherita">瑪格麗特 ($200)</option>
-#         <option value="pepperoni">義式臘腸 ($250)</option>
-#         <option value="hawaiian">夏威夷 ($230)</option>
-#       </select>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>西西里島 Pizza 點餐系統</title>
+  <link rel="icon" href="data:,">
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #fff9f2; }
+    h1 { color: #d33; }
+    .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .item { border: 1px solid #ccc; padding: 10px; border-radius: 10px; background: #fff; }
+    .order-list { margin-top: 20px; border-top: 2px solid #333; padding-top: 10px; }
+  </style>
+</head>
+<body>
 
-#       <label for="pizzaSize">選擇大小：</label>
-#       <select id="pizzaSize" name="pizzaSize">
-#         <option value="small">小 (+$0)</option>
-#         <option value="medium">中 (+$50)</option>
-#         <option value="large">大 (+$100)</option>
-#       </select>
+<h1>西西里島 Pizza 點餐</h1>
 
-#       <fieldset>
-#         <legend>加料（每項 +$30）：</legend>
-#         <label><input type="checkbox" name="topping" value="cheese">起司</label>
-#         <label><input type="checkbox" name="topping" value="mushroom">蘑菇</label>
-#         <label><input type="checkbox" name="topping" value="bacon">培根</label>
-#       </fieldset>
+<div class="menu" id="menu-list"></div>
 
-#       <p id="total">總金額：$0</p>
-#       <button type="submit">提交訂單</button>
-#     </form>
-#   </div>
+<label>
+  📞 客戶電話：
+  <input type="text" id="customer-phone" placeholder="輸入電話或備註">
+</label>
 
-#   <script src="/static/script.js"></script>
-# </body>
-# </html>
+<div class="order-list" id="order-summary">
+  <h2>🧾 訂單清單</h2>
+  <ul id="order-items"></ul>
+  <p><strong>總金額：</strong><span id="total-price">0</span> 元</p>
+  <button onclick="submitOrder()">✅ 送出訂單</button>
+</div>
 
+<script>
+const menuItems = [
+  { name: "瑪格麗特", price: 250 },
+  { name: "鄉野時蔬", price: 250 },
+  { name: "浪漫夏威夷", price: 290 },
+  { name: "海鮮派對", price: 300 },
+  { name: "巧遇三劍客", price: 300 },
+  { name: "韓式燒肉", price: 340 },
+  { name: "深山野豬", price: 340 },
+  { name: "深海花枝燒", price: 310 },
+  { name: "皇家海陸大餐", price: 370 },
+  { name: "蔥蔥遇見牛肉", price: 370 },
+  { name: "醬燒豬肉", price: 340 },
+  { name: "義式轟炸機", price: 300 },
+  { name: "初戀的滋味", price: 280 },
+  { name: "野菇燻腸", price: 280 },
+  { name: "蜂蜜巧克力", price: 200 }
+];
+
+const order = [];
+
+function renderMenu() {
+  const container = document.getElementById('menu-list');
+  menuItems.forEach((item, index) => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `
+      <strong>${item.name}</strong><br>
+      價格：${item.price} 元<br>
+      <label><input type="checkbox" id="cheese-${index}"> 起司加量 (+40)</label><br>
+      <button onclick="addToOrder(${index})">加入</button>
+    `;
+    container.appendChild(el);
+  });
+}
+
+function addToOrder(index) {
+  const item = menuItems[index];
+  const cheese = document.getElementById(`cheese-${index}`).checked;
+  const name = item.name + (cheese ? '（加起司）' : '');
+  const price = item.price + (cheese ? 40 : 0);
+  order.push({ name, price });
+  updateOrderList();
+}
+
+function updateOrderList() {
+  const list = document.getElementById('order-items');
+  list.innerHTML = '';
+  let total = 0;
+  order.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = `${item.name} - ${item.price} 元`;
+    list.appendChild(li);
+    total += item.price;
+  });
+  document.getElementById('total-price').textContent = total;
+}
+
+function submitOrder() {
+  const phone = document.getElementById('customer-phone').value;
+  if (!phone || order.length === 0) {
+    alert("請填寫電話並選擇餐點！");
+    return;
+  }
+
+  const payload = {
+    phone: phone,
+    items: order
+  };
+
+  // POST to Flask backend
+  fetch('/submit_order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert("訂單已送出！訂單編號：" + data.order_id);
+    location.reload();
+  });
+}
+renderMenu();
+</script>
+</body>
+</html>

@@ -1,44 +1,65 @@
-from flask import Flask, request, redirect, render_template
-import mysql.connector
-import os
+from flask import Flask, render_template, request, jsonify
+from db_config import get_connection
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
-
-def get_db_connection():
-    return mysql.connector.connect(
-        host=os.environ.get('DB_HOST', 'localhost'),
-        user=os.environ.get('DB_USER', 'root'),
-        password=os.environ.get('DB_PASSWORD', '你的密碼'),
-        database=os.environ.get('DB_NAME', 'pizza_order')
-    )
-
-pizza_prices = {'margherita': 200, 'pepperoni': 250, 'hawaiian': 230}
-size_prices = {'small': 0, 'medium': 50, 'large': 100}
-topping_price = 30
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/order', methods=['POST'])
-def order():
-    pizza_type = request.form.get('pizzaType')
-    pizza_size = request.form.get('pizzaSize')
-    toppings = request.form.getlist('topping')
+@app.route('/submit_order', methods=['POST'])
+def submit_order():
+    data = request.get_json()
+    phone = data.get('phone')
+    items = data.get('items')  # [{'name': 'Pizza A', 'price': 290}, ...]
 
-    total_price = pizza_prices.get(pizza_type, 0) + size_prices.get(pizza_size, 0) + topping_price * len(toppings)
-    toppings_str = ','.join(toppings)
+    if not phone or not items:
+        return jsonify({'error': '資料不完整'}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    sql = "INSERT INTO orders (pizza_type, pizza_size, toppings, total_price) VALUES (%s, %s, %s, %s)"
-    cursor.execute(sql, (pizza_type, pizza_size, toppings_str, total_price))
-    conn.commit()
-    cursor.close()
-    conn.close()
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    return redirect('/')
+        # 計算總金額
+        total_price = sum(item['price'] for item in items)
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port,debug=True)
+        # 新增一筆訂單
+        cursor.execute(
+            "INSERT INTO orders (customer_name, total_price) VALUES (%s, %s)",
+            (phone, total_price)
+        )
+        order_id = cursor.lastrowid
+
+        # 將每筆品項寫入 order_items
+        for item in items:
+            cursor.execute(
+                "INSERT INTO order_items (order_id, item_id, quantity) VALUES (%s, %s, %s)",
+                (order_id, get_item_id_by_name(cursor, item['name']), 1)
+            )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({'success': True, 'order_id': order_id})
+
+    except Exception as e:
+        print("錯誤：", e)
+        return jsonify({'error': '內部錯誤'}), 500
+
+# 根據名稱找出 menu_items 的 id
+def get_item_id_by_name(cursor, name):
+    # 移除「（加起司）」註記以找對應菜單
+    base_name = name.split("（")[0]
+    cursor.execute("SELECT id FROM menu_items WHERE name = %s", (base_name,))
+    result = cursor.fetchone()
+    if result:
+        return result[0]
+    else:
+        # 沒有在資料庫中對應的品項（可以選擇先插入或給 None）
+        return None
+
+if __name__ == '__main__':
+    app.run(debug=True)
